@@ -2,7 +2,6 @@ package io.github.hello09x.bedrock.i18n;
 
 import lombok.SneakyThrows;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.key.Namespaced;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -14,23 +13,39 @@ import org.jetbrains.annotations.NotNull;
 
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 public class I18n {
 
     @SneakyThrows
-    public static <P extends JavaPlugin & ClassLoaderSupplier & Namespaced> @NotNull void register(
+    public static <P extends JavaPlugin & I18nSupported> void register(
             @NotNull P plugin,
-            @NotNull String basename,
-            @NotNull Locale... locales
+            @NotNull String basename
     ) {
+        var locales = plugin
+                .getConfig()
+                .getStringList("i18n.locales")
+                .stream()
+                .map(local -> {
+                    var parts = local.split("_");
+                    if (parts.length == 1) {
+                        return new Locale(parts[0]);
+                    } else if (parts.length == 2) {
+                        return new Locale(parts[0], parts[1]);
+                    } else {
+                        throw new UnsupportedOperationException("Invalid i18n.locales format: " + local);
+                    }
+                })
+                .toList();
+
         var dataLoader = new URLClassLoader(new URL[]{
                 plugin.getDataFolder().toURI().toURL(),
         });
         var pluginLoader = plugin.classLoader();
 
-        var registry = TranslationRegistry.create(Key.key(plugin.namespace()));
+        var registry = TranslationRegistry.create(Key.key(plugin.identifier()));
         for (var local : locales) {
             ResourceBundle rb;
             try {
