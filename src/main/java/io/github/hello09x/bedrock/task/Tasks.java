@@ -10,17 +10,14 @@ import java.util.concurrent.locks.LockSupport;
 
 public class Tasks {
 
-    public static void join(@NotNull Plugin plugin, @NotNull VoidExecution execution) throws Throwable {
-        join(plugin, () -> {
+    public static void join(@NotNull VoidExecution execution, @NotNull Plugin plugin) throws Throwable {
+        join(() -> {
             execution.execute();
             return null;
-        });
+        }, plugin);
     }
 
-    public static <T> T join(
-            @NotNull Plugin plugin,
-            @NotNull Execution<T> execution
-    ) throws Throwable {
+    public static <T> T join(@NotNull Execution<T> execution, @NotNull Plugin plugin) throws Throwable {
         if (Bukkit.isPrimaryThread()) {
             throw new IllegalStateException("Never call this method in bukkit primary thread");
         }
@@ -28,18 +25,15 @@ public class Tasks {
         var blocker = Thread.currentThread();
         var exception = new AtomicReference<Throwable>();
         var ret = new AtomicReference<T>();
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                try {
-                    ret.set(execution.execute());
-                } catch (Throwable e) {
-                    exception.set(e);
-                } finally {
-                    LockSupport.unpark(blocker);
-                }
+        run(() -> {
+            try {
+                ret.set(execution.execute());
+            } catch (Throwable e) {
+                exception.set(e);
+            } finally {
+                LockSupport.unpark(blocker);
             }
-        }.runTaskLater(plugin, 0L);
+        }, plugin);
         LockSupport.park(blocker);
         var e = exception.get();
         if (e != null) {
@@ -48,25 +42,8 @@ public class Tasks {
         return ret.get();
     }
 
-    public static void runNextTick(@NotNull Plugin plugin, @NotNull Runnable runnable) {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                runnable.run();
-            }
-        }.runTask(plugin);
-    }
 
-    public static void runNextTickAsync(@NotNull Plugin plugin, @NotNull Runnable runnable) {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                runnable.run();
-            }
-        }.runTaskAsynchronously(plugin);
-    }
-
-    public static void runLaterAsync(@NotNull Plugin plugin, @NotNull Runnable runnable, long delay) {
+    public static void runAsync(@NotNull Runnable runnable, @NotNull Plugin plugin, long delay) {
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -75,25 +52,34 @@ public class Tasks {
         }.runTaskLaterAsynchronously(plugin, delay);
     }
 
-    public static void runAsync(@NotNull Plugin plugin, @NotNull Runnable runnable) {
+    public static void runAsync(@NotNull Runnable runnable, @NotNull Plugin plugin) {
         new BukkitRunnable() {
             @Override
             public void run() {
                 runnable.run();
             }
-        }.runTaskLaterAsynchronously(plugin, 0L);
+        }.runTaskAsynchronously(plugin);
     }
 
-    public static void run(@NotNull Plugin plugin, @NotNull Runnable runnable) {
+    public static void run(@NotNull Runnable runnable, @NotNull Plugin plugin) {
         new BukkitRunnable() {
             @Override
             public void run() {
                 runnable.run();
             }
-        }.runTaskLater(plugin, 0L);
+        }.runTask(plugin);
     }
 
-    public static void runLater(@NotNull Plugin plugin, long delay, @NotNull Runnable runnable) {
+    public static void run(@NotNull Runnable runnable, @NotNull Plugin plugin, long delay, long period) {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                runnable.run();
+            }
+        }.runTaskTimer(plugin, delay, period);
+    }
+
+    public static void run(@NotNull Runnable runnable, @NotNull Plugin plugin, long delay) {
         new BukkitRunnable() {
             @Override
             public void run() {
