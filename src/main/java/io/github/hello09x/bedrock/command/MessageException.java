@@ -30,4 +30,11 @@ public class MessageException extends RuntimeException {
         return message;
     }
 
+    public static @NotNull RuntimeException tryCast(@NotNull Throwable e) {
+        if (e instanceof MessageException me) {
+            return me;
+        }
+        return new RuntimeException(e);
+    }
+
 }

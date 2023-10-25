@@ -17,6 +17,34 @@ public class Tasks {
         }, plugin);
     }
 
+    public static void joinAsync(@NotNull NoReturnValueExecution execution, @NotNull Plugin plugin) throws Throwable {
+        joinAsync(() -> {
+            execution.execute();
+            return null;
+        }, plugin);
+    }
+
+    public static <T> T joinAsync(@NotNull Execution<T> execution, @NotNull Plugin plugin) throws Throwable {
+        var blocker = Thread.currentThread();
+        var exception = new AtomicReference<Throwable>();
+        var ret = new AtomicReference<T>();
+        runAsync(() -> {
+            try {
+                ret.set(execution.execute());
+            } catch (Throwable e) {
+                exception.set(e);
+            } finally {
+                LockSupport.unpark(blocker);
+            }
+        }, plugin);
+        LockSupport.park(blocker);
+        var e = exception.get();
+        if (e != null) {
+            throw e;
+        }
+        return ret.get();
+    }
+
     public static <T> T join(@NotNull Execution<T> execution, @NotNull Plugin plugin) throws Throwable {
         if (Bukkit.isPrimaryThread()) {
             throw new IllegalStateException("Never call this method in bukkit primary thread");
