@@ -18,6 +18,9 @@ public class RandomUtils {
     }
 
     public static boolean lucky(double probability) {
+        if (probability <= 0) {
+            return false;
+        }
         return ThreadLocalRandom.current().nextInt(100) < probability * 100;
     }
 
