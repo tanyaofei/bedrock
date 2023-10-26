@@ -10,14 +10,14 @@ import java.util.concurrent.locks.LockSupport;
 
 public class Tasks {
 
-    public static void join(@NotNull NoReturnValueExecution execution, @NotNull Plugin plugin) throws Throwable {
+    public static void join(@NotNull NoResultExecution execution, @NotNull Plugin plugin) throws Throwable {
         join(() -> {
             execution.execute();
             return null;
         }, plugin);
     }
 
-    public static void joinAsync(@NotNull NoReturnValueExecution execution, @NotNull Plugin plugin) throws Throwable {
+    public static void joinAsync(@NotNull NoResultExecution execution, @NotNull Plugin plugin) throws Throwable {
         joinAsync(() -> {
             execution.execute();
             return null;

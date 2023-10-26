@@ -1,5 +1,6 @@
 package io.github.hello09x.bedrock.util;
 
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -33,6 +34,15 @@ public class InventoryUtils {
             removed += delta;
         }
         return removed;
+    }
+
+    public static void addItem(@NotNull Player player, @NotNull ItemStack item) {
+        var result = player.getInventory().addItem(item);
+        if (!result.isEmpty()) {
+            for(var unfit: result.values()) {
+                player.getWorld().dropItem(player.getLocation(), unfit);
+            }
+        }
     }
 
 

@@ -1,7 +1,7 @@
 package io.github.hello09x.bedrock.task;
 
 @FunctionalInterface
-public interface NoReturnValueExecution {
+public interface NoResultExecution {
 
 
     void execute() throws Throwable;
