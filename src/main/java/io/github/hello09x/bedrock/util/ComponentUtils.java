@@ -2,6 +2,8 @@ package io.github.hello09x.bedrock.util;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -11,6 +13,7 @@ import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.textOfChildren;
 import static net.kyori.adventure.text.format.NamedTextColor.LIGHT_PURPLE;
 import static net.kyori.adventure.text.format.NamedTextColor.YELLOW;
+import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 
 public class ComponentUtils {
 
@@ -47,6 +50,14 @@ public class ComponentUtils {
 
     public static @NotNull TextComponent asBanner(@NotNull String title) {
         return textOfChildren(text("[ ", YELLOW), text(title, LIGHT_PURPLE), text(" ]", YELLOW));
+    }
+
+    public static @NotNull Component noItalic(@NotNull String raw) {
+        return text(raw).decoration(ITALIC, false);
+    }
+
+    public static @NotNull Component noItalic(@NotNull String raw, @NotNull TextColor color) {
+        return text(raw, color).decoration(ITALIC, false);
     }
 
 }
