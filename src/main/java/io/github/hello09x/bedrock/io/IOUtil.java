@@ -636,6 +636,10 @@ public final class IOUtil {
     }
 
     public static void write(byte @NotNull [] data, @NotNull File file) throws IOException {
+        var parent = file.getParentFile();
+        if (!parent.exists() && !parent.mkdirs()) {
+            throw new IOException("Parent folder is not existed: " + parent.getPath());
+        }
         try (var out = new BufferedOutputStream(new FileOutputStream(file), DEFAULT_BUFFER_SIZE)) {
             out.write(data);
         }
