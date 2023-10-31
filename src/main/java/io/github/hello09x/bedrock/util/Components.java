@@ -1,9 +1,9 @@
 package io.github.hello09x.bedrock.util;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,21 +15,16 @@ import static net.kyori.adventure.text.format.NamedTextColor.LIGHT_PURPLE;
 import static net.kyori.adventure.text.format.NamedTextColor.YELLOW;
 import static net.kyori.adventure.text.format.TextDecoration.ITALIC;
 
-public class ComponentUtils {
+public interface Components {
 
-    public static Component join(@NotNull Iterable<? extends Component> components, @NotNull Component sep) {
-        var itr = components.iterator();
-        var builder = Component.empty().toBuilder();
-        while (itr.hasNext()) {
-            builder.append(itr.next());
-            if (itr.hasNext()) {
-                builder.append(sep);
-            }
-        }
-        return builder.asComponent();
+    public static @NotNull Component join(
+            @NotNull Iterable<? extends Component> components,
+            @NotNull Component sep
+    ) {
+        return Component.join(JoinConfiguration.separator(sep), components);
     }
 
-    public static Component join(
+    public static @NotNull Component join(
             @NotNull Iterable<? extends Component> components,
             @NotNull Component sep,
             @Nullable Function<Integer, Component> prefixSupplier
@@ -48,7 +43,7 @@ public class ComponentUtils {
         return builder.asComponent();
     }
 
-    public static @NotNull TextComponent asBanner(@NotNull String title) {
+    public static @NotNull TextComponent banner(@NotNull String title) {
         return textOfChildren(text("[ ", YELLOW), text(title, LIGHT_PURPLE), text(" ]", YELLOW));
     }
 

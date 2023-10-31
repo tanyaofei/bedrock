@@ -1,6 +1,11 @@
 package io.github.hello09x.bedrock.storage;
 
+import com.google.common.base.Throwables;
+import io.github.hello09x.bedrock.io.IOUtil;
 import io.github.hello09x.bedrock.storage.value.AbstractValueWrapper;
+import io.github.hello09x.bedrock.util.RegistrablePlugin;
+import lombok.AccessLevel;
+import lombok.Getter;
 import org.bukkit.NamespacedKey;
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -8,6 +13,7 @@ import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
@@ -16,12 +22,41 @@ import java.util.stream.Collectors;
 
 public class JSONPersistentDataContainer implements PersistentDataContainer, Serializable {
 
-    private final static JSONPersistentDataContainerSerializer SERIALIZER = new JSONPersistentDataContainerSerializer();
+    private final static JSONHandler HANDLER = new JSONHandler();
 
+    @Getter(AccessLevel.PRIVATE)
     private final Map<String, AbstractValueWrapper<?>> data = new HashMap<>();
 
+    public JSONPersistentDataContainer() {
+    }
+
+    public JSONPersistentDataContainer(@NotNull RegistrablePlugin plugin, @NotNull String filename) {
+        {
+            var file = new File(plugin.getDataFolder(), filename);
+            if (file.exists() && file.isFile()) {
+                try {
+                    this.readFromFile(file, false);
+                } catch (IOException e) {
+                    plugin.getLogger().severe("Failed to read persistent data file: " + file.getPath() + "\n" + Throwables.getStackTraceAsString(e));
+                }
+            }
+        }
+
+        {
+            plugin.registerOnDisable(() -> {
+                var file = new File(plugin.getDataFolder(), filename);
+                try {
+                    IOUtil.write(this.serializeToBytes(), file);
+                } catch (IOException e) {
+                    plugin.getLogger().severe("Failed to save persistent data file: " + file.getPath() + "\n" + Throwables.getStackTraceAsString(e));
+                }
+            });
+        }
+    }
+
+
     public static @NotNull JSONPersistentDataContainer deserializeFromJSON(@NotNull String json) {
-        return SERIALIZER.getGson().fromJson(json, JSONPersistentDataContainer.class);
+        return HANDLER.getGson().fromJson(json, JSONPersistentDataContainer.class);
     }
 
     @Override
@@ -80,15 +115,32 @@ public class JSONPersistentDataContainer implements PersistentDataContainer, Ser
         return this.data.containsKey(key.toString());
     }
 
-    public @NotNull String serializeToJSON() throws IOException {
-        return SERIALIZER.getGson().toJson(this);
+    public @NotNull String serializeToJSON() {
+        return HANDLER.toJSON(this);
     }
 
-    public void readFromBytes(byte @NotNull [] bytes, boolean clear) throws java.io.IOException {
+    public void readFromBytes(byte @NotNull [] bytes, boolean clear) {
         if (clear) {
             this.data.clear();
         }
-        this.data.putAll(SERIALIZER.getGson().fromJson(new String(bytes, StandardCharsets.UTF_8), JSONPersistentDataContainer.class).data);
+
+        Optional.ofNullable(HANDLER.fromJSON(new String(bytes, StandardCharsets.UTF_8), JSONPersistentDataContainer.class))
+                .map(JSONPersistentDataContainer::getData)
+                .ifPresent(this.data::putAll);
+    }
+
+    public boolean readFromFile(@NotNull File file, boolean clear) throws IOException {
+        if (clear) {
+            this.data.clear();
+        }
+        if (!file.exists() || !file.isFile()) {
+            return false;
+        }
+
+        Optional.ofNullable(HANDLER.fromFile(file, JSONPersistentDataContainer.class))
+                .map(JSONPersistentDataContainer::getData)
+                .ifPresent(this.data::putAll);
+        return true;
     }
 
     public byte[] serializeToBytes() throws java.io.IOException {

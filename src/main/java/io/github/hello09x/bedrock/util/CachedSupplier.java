@@ -21,7 +21,6 @@ public class CachedSupplier<T> {
         return this.value;
     }
 
-
     public void remove() {
         this.value = null;
     }

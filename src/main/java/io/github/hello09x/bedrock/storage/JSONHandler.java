@@ -5,13 +5,22 @@ import com.google.gson.GsonBuilder;
 import io.github.hello09x.bedrock.gson.typehandler.RuntimeTypeAdapterFactory;
 import io.github.hello09x.bedrock.storage.value.*;
 import lombok.Getter;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.UnknownNullability;
 
-public class JSONPersistentDataContainerSerializer {
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
+public class JSONHandler {
 
     @Getter
     private final Gson gson;
 
-    public JSONPersistentDataContainerSerializer() {
+    public JSONHandler() {
         this.gson = new GsonBuilder()
                 .registerTypeAdapterFactory(RuntimeTypeAdapterFactory
                         .of(AbstractValueWrapper.class, "type")
@@ -34,5 +43,20 @@ public class JSONPersistentDataContainerSerializer {
                 ).create();
     }
 
+    @Contract(pure = true, value = "null -> null")
+    public String toJSON(@Nullable Object object) {
+        return this.gson.toJson(object);
+    }
+
+    @Contract(pure = true, value = "null, _ -> null")
+    public <T> @Nullable T fromJSON(@Nullable String json, Class<T> type) {
+        return this.gson.fromJson(json, type);
+    }
+
+    public <T> @Nullable T fromFile(@NotNull File file, Class<T> type) throws IOException {
+        try (var reader = new FileReader(file, StandardCharsets.UTF_8)) {
+            return this.gson.fromJson(reader, type);
+        }
+    }
 
 }
