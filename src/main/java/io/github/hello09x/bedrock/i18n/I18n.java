@@ -18,26 +18,20 @@ import java.util.ResourceBundle;
 
 public class I18n {
 
+    private static Locale LOCAL = Locale.getDefault();
+
     @SneakyThrows
     public static <P extends JavaPlugin & I18nSupported> void register(
             @NotNull P plugin,
             @NotNull String basename
     ) {
-        var locales = plugin
-                .getConfig()
-                .getStringList("i18n.locales")
-                .stream()
-                .map(local -> {
-                    var parts = local.split("_");
-                    if (parts.length == 1) {
-                        return new Locale(parts[0]);
-                    } else if (parts.length == 2) {
-                        return new Locale(parts[0], parts[1]);
-                    } else {
-                        throw new UnsupportedOperationException("Invalid i18n.locales format: " + local);
-                    }
-                })
-                .toList();
+        var localeString = plugin.getConfig().getString("i18n.locale");
+        if (localeString == null) {
+            throw new IllegalStateException("Missing i18n.local property in your config.yml");
+        }
+
+        var locale = parseLocale(localeString);
+        LOCAL = locale;
 
         var dataLoader = new URLClassLoader(new URL[]{
                 plugin.getDataFolder().toURI().toURL(),
@@ -45,15 +39,14 @@ public class I18n {
         var pluginLoader = plugin.classLoader();
 
         var registry = TranslationRegistry.create(Key.key(plugin.identifier()));
-        for (var local : locales) {
-            ResourceBundle rb;
-            try {
-                rb = ResourceBundle.getBundle(basename, local, dataLoader, new UTF8ResourceBundleControl());
-            } catch (Throwable e) {
-                rb = ResourceBundle.getBundle(basename, local, pluginLoader, new UTF8ResourceBundleControl());
-            }
-            registry.registerAll(local, rb, false);
+        ResourceBundle rb;
+        try {
+            rb = ResourceBundle.getBundle(basename, locale, dataLoader, new UTF8ResourceBundleControl());
+        } catch (Throwable e) {
+            rb = ResourceBundle.getBundle(basename, locale, pluginLoader, new UTF8ResourceBundleControl());
         }
+        registry.registerAll(locale, rb, false);
+
         GlobalTranslator.translator().addSource(registry);
     }
 
@@ -66,11 +59,11 @@ public class I18n {
     }
 
     public static @NotNull Component translate(@NotNull TranslatableComponent component) {
-        return translate(component, Locale.getDefault());
+        return translate(component, LOCAL);
     }
 
     public static @NotNull Component translate(@NotNull TranslateKey translateKey) {
-        return translate(Component.translatable(translateKey.translateKey()), Locale.getDefault());
+        return translate(Component.translatable(translateKey.translateKey()), LOCAL);
     }
 
     public static @NotNull Component translate(@NotNull TranslateKey translateKey, @NotNull Locale locale) {
@@ -82,7 +75,7 @@ public class I18n {
     }
 
     public static @NotNull String asString(@NotNull String translateKey) {
-        return asString(translateKey, Locale.getDefault());
+        return asString(translateKey, LOCAL);
     }
 
     public static @NotNull String asString(@NotNull String translateKey, @NotNull Locale locale) {
@@ -91,6 +84,17 @@ public class I18n {
 
     public static @NotNull String asString(@NotNull TranslatableComponent component, @NotNull Locale locale) {
         return asString(translate(component, locale));
+    }
+
+    private static @NotNull Locale parseLocale(@NotNull String locale) {
+        var parts = locale.split("_");
+        if (parts.length == 1) {
+            return new Locale(parts[0]);
+        } else if (parts.length == 2) {
+            return new Locale(parts[0], parts[1]);
+        } else {
+            throw new UnsupportedOperationException("Invalid i18n.locales format: " + locale);
+        }
     }
 
 }
