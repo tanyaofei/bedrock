@@ -13,7 +13,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -68,6 +67,14 @@ public class I18n {
 
     public static @NotNull Component translate(@NotNull TranslatableComponent component) {
         return translate(component, Locale.getDefault());
+    }
+
+    public static @NotNull Component translate(@NotNull TranslateKey translateKey) {
+        return translate(Component.translatable(translateKey.translateKey()), Locale.getDefault());
+    }
+
+    public static @NotNull Component translate(@NotNull TranslateKey translateKey, @NotNull Locale locale) {
+        return translate(Component.translatable(translateKey.translateKey()), locale);
     }
 
     private static @NotNull String asString(@NotNull Component component) {
