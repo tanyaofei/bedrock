@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -53,6 +54,10 @@ public interface Components {
 
     public static @NotNull Component noItalic(@NotNull String raw, @NotNull TextColor color) {
         return text(raw, color).decoration(ITALIC, false);
+    }
+
+    public static @NotNull String asString(@NotNull Component component) {
+        return PlainTextComponentSerializer.plainText().serialize(component);
     }
 
 }

@@ -140,6 +140,10 @@ public class Commands {
         return new PlayerArgument(name);
     }
 
+    public static @NotNull OfflinePlayerArgument offlinePlayer(@NotNull String name) {
+        return new OfflinePlayerArgument(name);
+    }
+
     public static @NotNull UUIDArgument uuid(@NotNull String name) {
         return new UUIDArgument(name);
     }

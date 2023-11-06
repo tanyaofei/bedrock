@@ -14,11 +14,4 @@ public interface I18nSupported {
      */
     @NotNull ClassLoader classLoader();
 
-    /**
-     * @return 插件标识
-     */
-    @NotNull
-    @Pattern("([a-z0-9_\\-.]+:)?[a-z0-9_\\-./]+")
-    String identifier();
-
 }

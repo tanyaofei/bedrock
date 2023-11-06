@@ -1,11 +1,13 @@
 package io.github.hello09x.bedrock.i18n;
 
+import io.github.hello09x.bedrock.util.Components;
 import lombok.SneakyThrows;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslatableComponent;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import net.kyori.adventure.translation.GlobalTranslator;
 import net.kyori.adventure.translation.TranslationRegistry;
 import net.kyori.adventure.util.UTF8ResourceBundleControl;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -18,72 +20,63 @@ import java.util.ResourceBundle;
 
 public class I18n {
 
-    private static Locale LOCAL = Locale.getDefault();
+    @NotNull
+    private final PluginTranslator translator;
+
+    @NotNull
+    private final Locale defaultLocale;
 
     @SneakyThrows
-    public static <P extends JavaPlugin & I18nSupported> void register(
-            @NotNull P plugin,
-            @NotNull String basename
-    ) {
-        var localeString = plugin.getConfig().getString("i18n.locale");
-        if (localeString == null) {
-            throw new IllegalStateException("Missing i18n.local property in your config.yml");
-        }
-
-        var locale = parseLocale(localeString);
-        LOCAL = locale;
-
+    public <P extends JavaPlugin & I18nSupported> I18n(@NotNull P plugin, @NotNull String bundleName) {
+        var locale = parseLocale(plugin.getConfig().getString("i18n.locale", "zh"));
         var dataLoader = new URLClassLoader(new URL[]{
                 plugin.getDataFolder().toURI().toURL(),
         });
         var pluginLoader = plugin.classLoader();
 
-        var registry = TranslationRegistry.create(Key.key(plugin.identifier()));
+        var registry = TranslationRegistry.create(Key.key(plugin.getName().toLowerCase(Locale.ROOT)));
         ResourceBundle rb;
         try {
-            rb = ResourceBundle.getBundle(basename, locale, dataLoader, new UTF8ResourceBundleControl());
+            rb = ResourceBundle.getBundle(bundleName, locale, dataLoader, new UTF8ResourceBundleControl());
         } catch (Throwable e) {
-            rb = ResourceBundle.getBundle(basename, locale, pluginLoader, new UTF8ResourceBundleControl());
+            rb = ResourceBundle.getBundle(bundleName, locale, pluginLoader, new UTF8ResourceBundleControl());
         }
         registry.registerAll(locale, rb, false);
 
-        GlobalTranslator.translator().addSource(registry);
+        this.translator = new PluginTranslator(plugin, registry);
+        this.defaultLocale = locale;
     }
 
-    public static @NotNull Component translate(@NotNull TranslatableComponent component, @NotNull Locale locale) {
-        return GlobalTranslator.render(component, locale);
+    public @NotNull Component translate(@NotNull String translateKey) {
+        return translate(Component.translatable(translateKey));
     }
 
-    public static @NotNull Component translate(@NotNull String translateKey, @NotNull Locale locale) {
-        return translate(Component.translatable(translateKey), locale);
+    public @NotNull Component translate(@NotNull String translateKey, @NotNull TextColor color) {
+        return translate(Component.translatable(translateKey, color));
     }
 
-    public static @NotNull Component translate(@NotNull TranslatableComponent component) {
-        return translate(component, LOCAL);
+    public @NotNull Component translate(@NotNull String translateKey, @NotNull TextColor color, @NotNull TextDecoration decoration) {
+        return translate(Component.translatable(translateKey, color, decoration));
     }
 
-    public static @NotNull Component translate(@NotNull TranslateKey translateKey) {
-        return translate(Component.translatable(translateKey.translateKey()), LOCAL);
+    public @NotNull Component translate(@NotNull Component component) {
+        return translator.render(component, defaultLocale);
     }
 
-    public static @NotNull Component translate(@NotNull TranslateKey translateKey, @NotNull Locale locale) {
-        return translate(Component.translatable(translateKey.translateKey()), locale);
+    public @NotNull Component translate(@NotNull TranslateKey translateKey) {
+        return translate(translateKey.translateKey());
     }
 
-    private static @NotNull String asString(@NotNull Component component) {
-        return PlainTextComponentSerializer.plainText().serialize(component);
+    public @NotNull Component translate(@NotNull TranslateKey translateKey, @NotNull TextColor color) {
+        return translate(translateKey.translateKey(), color);
     }
 
-    public static @NotNull String asString(@NotNull String translateKey) {
-        return asString(translateKey, LOCAL);
+    public @NotNull Component translate(@NotNull TranslateKey translateKey, @NotNull TextColor color, @NotNull TextDecoration decoration) {
+        return translate(translateKey.translateKey(), color, decoration);
     }
 
-    public static @NotNull String asString(@NotNull String translateKey, @NotNull Locale locale) {
-        return asString(translate(translateKey, locale));
-    }
-
-    public static @NotNull String asString(@NotNull TranslatableComponent component, @NotNull Locale locale) {
-        return asString(translate(component, locale));
+    public @NotNull String asString(@NotNull String translateKey) {
+        return Components.asString(translate(translateKey));
     }
 
     private static @NotNull Locale parseLocale(@NotNull String locale) {
