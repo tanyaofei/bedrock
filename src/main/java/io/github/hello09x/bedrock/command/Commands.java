@@ -184,19 +184,28 @@ public class Commands {
         return command("help")
                 .withAliases("?")
                 .withOptionalArguments(
-                        int32("页码", 1),
-                        int32("数量", 1)
+                        int32("page", 1),
+                        int32("size", 1)
                 )
                 .executes((sender, args) -> {
                     var availableUsages = Arrays
                             .stream(usages)
                             .filter(usage -> {
                                 var permission = usage.permission();
-                                return permission == null || sender.hasPermission(permission);
+                                if (permission != null && !sender.hasPermission(permission)) {
+                                    return false;
+                                }
+
+                                var requirement = usage.requirement();
+                                if (requirement != null && !requirement.test(sender)) {
+                                    return false;
+                                }
+
+                                return true;
                             }).toList();
 
-                    var current = (int) args.getOptional("页码").orElse(1);
-                    var size = (int) args.getOptional("数量").orElse(10);
+                    var current = (int) args.getOptional("page").orElse(1);
+                    var size = (int) args.getOptional("size").orElse(10);
 
                     var page = Page.of(availableUsages, current, size);
 
