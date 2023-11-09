@@ -8,6 +8,7 @@ import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import net.kyori.adventure.translation.Translatable;
 import net.kyori.adventure.translation.TranslationRegistry;
 import net.kyori.adventure.util.UTF8ResourceBundleControl;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -63,16 +64,16 @@ public class I18n {
         return translator.render(component, defaultLocale);
     }
 
-    public @NotNull Component translate(@NotNull TranslateKey translateKey) {
-        return translate(translateKey.translateKey());
+    public @NotNull Component translate(@NotNull Translatable translateKey) {
+        return translate(translateKey.translationKey());
     }
 
-    public @NotNull Component translate(@NotNull TranslateKey translateKey, @NotNull TextColor color) {
-        return translate(translateKey.translateKey(), color);
+    public @NotNull Component translate(@NotNull Translatable translateKey, @NotNull TextColor color) {
+        return translate(translateKey.translationKey(), color);
     }
 
-    public @NotNull Component translate(@NotNull TranslateKey translateKey, @NotNull TextColor color, @NotNull TextDecoration decoration) {
-        return translate(translateKey.translateKey(), color, decoration);
+    public @NotNull Component translate(@NotNull Translatable translateKey, @NotNull TextColor color, @NotNull TextDecoration decoration) {
+        return translate(translateKey.translationKey(), color, decoration);
     }
 
     public @NotNull String asString(@NotNull String translateKey) {
