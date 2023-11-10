@@ -2,10 +2,12 @@ package io.github.hello09x.bedrock.command;
 
 import com.google.common.base.Strings;
 import dev.jorel.commandapi.CommandAPICommand;
+import dev.jorel.commandapi.CommandTree;
 import dev.jorel.commandapi.arguments.*;
 import io.github.hello09x.bedrock.page.Page;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.checkerframework.checker.units.qual.C;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,6 +20,10 @@ public class Commands {
 
     public static @NotNull CommandAPICommand command(@NotNull String name) {
         return new CommandAPICommand(name);
+    }
+
+    public static @NotNull CommandTree commandTree(@NotNull String name) {
+        return new CommandTree(name);
     }
 
     public static @NotNull IntegerArgument int32(@NotNull String name) {
@@ -70,6 +76,10 @@ public class Commands {
 
     public static @NotNull MultiLiteralArgument literals(@NotNull String name, @NotNull List<String> literals) {
         return new MultiLiteralArgument(name, literals);
+    }
+
+    public static @NotNull LiteralArgument literal(@NotNull String literal) {
+        return new LiteralArgument(literal);
     }
 
     public static @NotNull LiteralArgument literal(@NotNull String name, @NotNull String literal) {
