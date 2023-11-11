@@ -11,16 +11,17 @@ public class LazyInit<V> {
     private V value;
 
     public V computeIfAbsent(@NotNull Supplier<V> supplier, boolean once) {
+        if (this.value == INITIALIZED) {
+            return null;
+        }
         if (this.value != null) {
-            if (this.value == INITIALIZED) {
-                return null;
-            }
             return this.value;
         }
 
         this.value = supplier.get();
         if (once && this.value == null) {
             this.value = (V) INITIALIZED;
+            return null;
         }
         return this.value;
     }
