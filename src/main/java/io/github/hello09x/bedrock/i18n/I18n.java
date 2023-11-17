@@ -4,15 +4,17 @@ import io.github.hello09x.bedrock.util.Components;
 import lombok.SneakyThrows;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TranslatableComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.translation.Translatable;
 import net.kyori.adventure.translation.TranslationRegistry;
 import net.kyori.adventure.util.UTF8ResourceBundleControl;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -64,16 +66,47 @@ public class I18n {
         return translator.render(component, defaultLocale);
     }
 
-    public @NotNull Component translate(@NotNull Translatable translateKey) {
-        return translate(translateKey.translationKey());
+    public @NotNull Component translate(@NotNull Translatable translatable) {
+        return translate(translatable.translationKey());
     }
 
-    public @NotNull Component translate(@NotNull Translatable translateKey, @NotNull TextColor color) {
-        return translate(translateKey.translationKey(), color);
+    public @NotNull Component translate(@NotNull Translatable translatable, @NotNull TextColor color) {
+        return translate(translatable.translationKey(), color);
     }
 
-    public @NotNull Component translate(@NotNull Translatable translateKey, @NotNull TextColor color, @NotNull TextDecoration decoration) {
-        return translate(translateKey.translationKey(), color, decoration);
+    public @NotNull Component translate(@NotNull Translatable translatable, @NotNull TextColor color, @NotNull TextDecoration decoration) {
+        return translate(translatable.translationKey(), color, decoration);
+    }
+
+    public @NotNull Component translate(@NotNull String translationKey, @NotNull TagResolver.@NotNull Single... placeholders) {
+        return translate(translationKey, null, placeholders);
+    }
+
+    public @NotNull Component translate(@NotNull Translatable translatable, @NotNull TagResolver.@NotNull Single... placeholders) {
+        return translate(translatable.translationKey(), null, placeholders);
+    }
+
+    public @NotNull Component translate(@NotNull Translatable translatable, @Nullable NamedTextColor color, @NotNull TagResolver.@NotNull Single... placeholders) {
+        return translate(translatable.translationKey(), color, placeholders);
+    }
+
+    public @NotNull Component translate(
+            @NotNull String translationKey,
+            @Nullable NamedTextColor color,
+            @NotNull TagResolver.@NotNull Single... placeholders
+    ) {
+        if (color == null) {
+            return MiniMessage.miniMessage().deserialize(
+                    asString(translationKey),
+                    placeholders
+            );
+        }
+
+        var name = color.toString();
+        return MiniMessage.miniMessage().deserialize(
+                "<%s>".formatted(name) + asString(translationKey) + "</%s>".formatted(name),
+                placeholders
+        );
     }
 
     public @NotNull String asString(@NotNull String translateKey) {

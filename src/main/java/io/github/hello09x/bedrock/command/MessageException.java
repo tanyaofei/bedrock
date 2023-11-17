@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 import static net.kyori.adventure.text.format.NamedTextColor.RED;
 
-public class MessageException extends RuntimeException {
+public class MessageException extends Exception {
 
     private final Component message;
 
@@ -28,13 +28,6 @@ public class MessageException extends RuntimeException {
 
     public @NotNull Component asComponent() {
         return message;
-    }
-
-    public static @NotNull RuntimeException tryCast(@NotNull Throwable e) {
-        if (e instanceof MessageException me) {
-            return me;
-        }
-        return new RuntimeException(e);
     }
 
 }
