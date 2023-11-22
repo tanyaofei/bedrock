@@ -1,11 +1,14 @@
 package io.github.hello09x.bedrock.storage.value;
 
 import io.github.hello09x.bedrock.storage.JSONPersistentDataContainer;
+import io.github.hello09x.bedrock.storage.type.StringObjectMap;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Map;
 
 @AllArgsConstructor
 public abstract class AbstractValueWrapper<T> {
@@ -44,6 +47,8 @@ public abstract class AbstractValueWrapper<T> {
             return new TagContainerValueWrapper((JSONPersistentDataContainer) value);
         } else if (complexType == JSONPersistentDataContainer[].class) {
             return new TagContainerArrayValueWrapper((JSONPersistentDataContainer[]) value);
+        } else if (complexType == StringObjectMap.class) {
+            return new MapValueWrapper((StringObjectMap) value);
         } else {
             throw new IllegalArgumentException("unsupported type: " + type.getPrimitiveType());
         }

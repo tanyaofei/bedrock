@@ -37,6 +37,7 @@ public class JSONHandler {
                         .registerSubtype(LongArrayValueWrapper.class, "long[]")
                         .registerSubtype(ByteArrayValueWrapper.class, "byte[]")
                         .registerSubtype(StringArrayValueWrapper.class, "string[]")
+                        .registerSubtype(MapValueWrapper.class, "map[string]object")
 
                         .registerSubtype(TagContainerValueWrapper.class, "tag")
                         .registerSubtype(TagContainerArrayValueWrapper.class, "tag[]")

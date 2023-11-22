@@ -6,31 +6,35 @@ import io.github.hello09x.bedrock.storage.value.AbstractValueWrapper;
 import io.github.hello09x.bedrock.util.RegistrablePlugin;
 import lombok.AccessLevel;
 import lombok.Getter;
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class JSONPersistentDataContainer implements PersistentDataContainer, Serializable {
+public class JSONPersistentDataContainer implements PersistentDataContainer {
 
     private final static JSONHandler HANDLER = new JSONHandler();
+
+    private final Plugin plugin;
+
+    private final String filename;
 
     @Getter(AccessLevel.PRIVATE)
     private final Map<String, AbstractValueWrapper<?>> data = new HashMap<>();
 
-    public JSONPersistentDataContainer() {
-    }
-
     public JSONPersistentDataContainer(@NotNull RegistrablePlugin plugin, @NotNull String filename) {
+        this.plugin = plugin;
+        this.filename = filename;
         {
             var file = new File(plugin.getDataFolder(), filename);
             if (file.exists() && file.isFile()) {
@@ -43,14 +47,8 @@ public class JSONPersistentDataContainer implements PersistentDataContainer, Ser
         }
 
         {
-            plugin.registerOnDisable(() -> {
-                var file = new File(plugin.getDataFolder(), filename);
-                try {
-                    IOUtil.write(this.serializeToBytes(), file);
-                } catch (IOException e) {
-                    plugin.getLogger().severe("Failed to save persistent data file: " + file.getPath() + "\n" + Throwables.getStackTraceAsString(e));
-                }
-            });
+            Bukkit.getScheduler().runTaskTimer(plugin, this::saveFile, 6000, 6000);
+            plugin.registerOnDisable(this::saveFile);
         }
     }
 
@@ -149,6 +147,15 @@ public class JSONPersistentDataContainer implements PersistentDataContainer, Ser
 
     public void clear() {
         this.data.clear();
+    }
+
+    private void saveFile() {
+        var file = new File(plugin.getDataFolder(), filename);
+        try {
+            IOUtil.write(this.serializeToBytes(), file);
+        } catch (IOException e) {
+            plugin.getLogger().severe("Failed to save persistent data file: " + file.getPath() + "\n" + Throwables.getStackTraceAsString(e));
+        }
     }
 
 }

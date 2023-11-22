@@ -4,11 +4,13 @@ import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
+import java.util.Map;
 
 public interface JSONPersistentDataType {
 
     PersistentDataType<String[], String[]> STRING_ARRAY = new JSONComplexPersistentDataType<>(String[].class);
+
+    PersistentDataType<StringObjectMap, StringObjectMap> MAP = new JSONComplexPersistentDataType<>(StringObjectMap.class);
 
     class JSONComplexPersistentDataType<Z> implements PersistentDataType<Z, Z> {
 
