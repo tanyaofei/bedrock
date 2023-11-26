@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public class Worlds {
 
@@ -57,6 +58,25 @@ public class Worlds {
      */
     public static @Nullable World getNonOverworld() {
         return Bukkit.getWorlds().stream().filter(w -> !w.getName().equals(WORLD_OVERWORLD)).findAny().orElse(null);
+    }
+
+    /**
+     * 获取其他世界
+     *
+     * @param notThisWorld 排除的世界
+     * @return 其他世界
+     */
+    public static @Nullable World getOtherWorld(@NotNull World notThisWorld) {
+        return Bukkit.getWorlds().stream().filter(w -> !w.equals(notThisWorld)).findAny().orElse(null);
+    }
+
+    /**
+     * 获取默认世界
+     *
+     * @return 默认世界
+     */
+    public static @NotNull World getMainWorld() {
+        return Optional.ofNullable(Bukkit.getWorld(WORLD_OVERWORLD)).orElseGet(() -> Bukkit.getWorlds().get(0));
     }
 
 }
