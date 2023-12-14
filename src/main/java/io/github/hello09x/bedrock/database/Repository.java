@@ -2,19 +2,25 @@ package io.github.hello09x.bedrock.database;
 
 import com.google.common.reflect.TypeToken;
 import io.github.hello09x.bedrock.page.Page;
+import lombok.SneakyThrows;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class Repository<T> {
 
     private final static ConnectionPoolHolder holder = new ConnectionPoolHolder();
+    private static Map<Plugin, DatasourceConfig> configs = new ConcurrentHashMap<>();
 
     private final Plugin plugin;
     private final ConnectPool pool;
@@ -24,10 +30,25 @@ public abstract class Repository<T> {
         this.plugin = plugin;
         this.pool = holder.getOrCreate(
                 plugin,
-                () -> new DatasourceConfig(plugin, null)
+                () -> configs.computeIfAbsent(plugin, p -> new DatasourceConfig(p, null))
         );
-        initTables();
+
+        this.initTables();
         this.tableInfo = TableInfo.parse(getModelType());
+    }
+
+    @SneakyThrows
+    public static @NotNull DBType getDBType(@NotNull Plugin plugin) {
+        var connection = holder.getOrCreate(
+                plugin,
+                () -> configs.computeIfAbsent(plugin, p -> new DatasourceConfig(p, null))
+        ).get().getRaw();
+
+        return switch (connection.getMetaData().getDatabaseProductName()) {
+            case "SQLite" -> DBType.SQLITE;
+            case "MySQL" -> DBType.MYSQL;
+            default -> throw new UnsupportedOperationException("Unsupported database");
+        };
     }
 
     protected abstract void initTables();

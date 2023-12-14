@@ -15,14 +15,29 @@ import java.io.File;
 @ToString
 public class DatasourceConfig extends Config<DatasourceConfig> {
 
+    /**
+     * 驱动名称
+     */
     private String driverClass;
 
+    /**
+     * 连接地址
+     */
     private String url;
 
+    /**
+     * 账号
+     */
     private String username;
 
+    /**
+     * 密码
+     */
     private String password;
 
+    /**
+     * 连接池数量
+     */
     private int size;
 
     @Getter(AccessLevel.NONE)
@@ -39,7 +54,7 @@ public class DatasourceConfig extends Config<DatasourceConfig> {
             return;
         }
         this.url = this.getURL(file);
-        this.driverClass = file.getString("datasource.driverClass", "org.sqlite.JDBC");
+        this.driverClass = file.getString("datasource.driver-class", "org.sqlite.JDBC");
         this.username = file.getString("datasource.username");
         this.password = file.getString("datasource.password");
         this.size = file.getInt("datasource.size", 1);

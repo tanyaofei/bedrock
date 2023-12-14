@@ -25,9 +25,9 @@ public class JSONPersistentDataContainer implements PersistentDataContainer {
 
     private final static JSONHandler HANDLER = new JSONHandler();
 
-    private final Plugin plugin;
+    private final transient Plugin plugin;
 
-    private final String filename;
+    private final transient String filename;
 
     @Getter(AccessLevel.PRIVATE)
     private final Map<String, AbstractValueWrapper<?>> data = new HashMap<>();
