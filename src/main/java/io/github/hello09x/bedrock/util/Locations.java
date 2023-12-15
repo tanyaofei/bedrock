@@ -1,0 +1,69 @@
+package io.github.hello09x.bedrock.util;
+
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import org.bukkit.Location;
+import org.bukkit.World;
+import org.jetbrains.annotations.NotNull;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class Locations {
+
+    /**
+     * 转成区域 key
+     *
+     * @param pos    坐标
+     * @param length 区域边长
+     * @return 区域 key
+     */
+    public static long toRegionKey(@NotNull Location pos, int length) {
+        return toRegionKey((long) pos.getBlockX(), (long) pos.getBlockZ(), length);
+    }
+
+    /**
+     * 转成区域 key
+     *
+     * @param x      X 坐标
+     * @param z      Z 坐标
+     * @param length 边长
+     * @return 区域 key
+     */
+    public static long toRegionKey(int x, int z, int length) {
+        return toRegionKey((long) x, z, length);
+    }
+
+    /**
+     * 转成区域 key
+     *
+     * @param x      X 坐标
+     * @param z      Z 坐标
+     * @param length 边长
+     * @return 区域 key
+     */
+    public static long toRegionKey(long x, long z, int length) {
+        return (x / length & 0xffffffffL) | (z / length & 0xffffffffL) << 32;
+    }
+
+    /**
+     * 区域 key 转回区域左上角坐标
+     *
+     * @param world     世界
+     * @param regionKey 区域 key
+     * @param length    区域边长
+     * @return 该区域的左上角坐标
+     */
+    public static @NotNull Location toLocation(@NotNull World world, long regionKey, int length) {
+        var x = (int) (regionKey & 0xffffffffL) * length;
+        var z = (int) (regionKey >> 32 & 0xffffffffL) * length;
+        return new Location(world, x, 0, z);
+    }
+
+    public static @NotNull String toString(@NotNull Location pos) {
+        var world = pos.getWorld();
+        if (world != null) {
+            return "([%s]%.1f, %.1f, %.1f)".formatted(world.getName(), pos.getX(), pos.getY(), pos.getZ());
+        }
+        return "(%.1f, %.1f, %.1f)".formatted(pos.getX(), pos.getY(), pos.getZ());
+    }
+
+}
