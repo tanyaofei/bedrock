@@ -6,9 +6,8 @@ import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -38,7 +37,7 @@ public abstract class Config<T extends Config<T>> {
             var resource = plugin.getClass().getClassLoader().getResource("config.yml");
             if (resource != null) {
                 try (var in = resource.openStream()) {
-                    IOUtil.copy(in, new FileWriter(file));
+                    IOUtil.copy(new InputStreamReader(in, StandardCharsets.UTF_8), new FileWriter(file, StandardCharsets.UTF_8));
                 } catch (IOException e) {
                     throw new IllegalStateException(
                             "Failed to read default config file in jar for plugin: " + plugin.getName(),
