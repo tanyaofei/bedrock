@@ -8,14 +8,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public abstract class Repository<T> {
 
@@ -125,6 +124,28 @@ public abstract class Repository<T> {
                 return stm.executeUpdate();
             }
         });
+    }
+
+    public int deleteByIds(@NotNull List<? extends Serializable> ids) {
+        if (ids.isEmpty()) {
+            return 0;
+        }
+
+        var sql = "delete from %s where %s in (%s)".formatted(
+                tableInfo.tableName(),
+                IntStream.range(0, ids.size()).mapToObj(x -> "?").collect(Collectors.joining(", "))
+        );
+
+        return execute(connection -> {
+            try (PreparedStatement stm = connection.prepareStatement(sql)) {
+                int i = 1;
+                for (var id : ids) {
+                    stm.setObject(i++, id);
+                }
+                return stm.executeUpdate();
+            }
+        });
+
     }
 
     public int count() {
