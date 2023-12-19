@@ -133,6 +133,7 @@ public abstract class Repository<T> {
 
         var sql = "delete from %s where %s in (%s)".formatted(
                 tableInfo.tableName(),
+                getPk(),
                 IntStream.range(0, ids.size()).mapToObj(x -> "?").collect(Collectors.joining(", "))
         );
 
