@@ -4,6 +4,7 @@ import com.google.common.reflect.TypeToken;
 import io.github.hello09x.bedrock.page.Page;
 import lombok.SneakyThrows;
 import org.bukkit.plugin.Plugin;
+import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -131,6 +132,7 @@ public abstract class Repository<T> {
             return 0;
         }
 
+        @Language("SQL")
         var sql = "delete from %s where %s in (%s)".formatted(
                 tableInfo.tableName(),
                 getPk(),
@@ -162,8 +164,48 @@ public abstract class Repository<T> {
         return selectPage("select * from " + tableInfo.tableName(), page, size);
     }
 
-    protected @NotNull Page<T> selectPage(@NotNull String rawSql, int page, int size) {
-        var countSql = "select count(*) from (" + rawSql + ")";
+    protected @NotNull Page<T> selectPage(int page, int size, @NotNull @Language("SQL") String rawSql, @Nullable Object @NotNull ... parameters) {
+        var countSql = "select count(*) from (" + rawSql + ") t";
+        int total = execute(connection -> {
+            try (PreparedStatement stm = connection.prepareStatement(countSql)) {
+                for (int i = 0; i < parameters.length; i++) {
+                    stm.setObject(i + 1, parameters[i]);
+                }
+                var rs = stm.executeQuery();
+                if(!rs.next()) {
+                    throw new Error("Empty ResultSet");
+                }
+                return rs.getInt(1);
+            }
+        });
+
+        if (total == 0) {
+            return Page.empty();
+        }
+
+        var offset = (page - 1) * size;
+        var sql = rawSql + " LIMIT ?, ?";
+        return execute(connection -> {
+            try (PreparedStatement stm = connection.prepareStatement(sql)) {
+                int i = 1;
+                for(var parameter: parameters) {
+                    stm.setObject(i++, parameter);
+                }
+                stm.setObject(i++, offset);
+                stm.setObject(i++, size);
+                return new Page<>(
+                        mapMany(stm.executeQuery()),
+                        page,
+                        size,
+                        (int) Math.ceil((double) total / (double) size),
+                        total
+                );
+            }
+        });
+    }
+
+    protected @NotNull Page<T> selectPage(@NotNull @Language("sql") String rawSql, int page, int size) {
+        var countSql = "select count(*) from (" + rawSql + ") t";
         int total = execute(connection -> {
             try (PreparedStatement stm = connection.prepareStatement(countSql)) {
                 return stm.executeQuery().getInt(1);
