@@ -8,7 +8,9 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.textOfChildren;
@@ -54,6 +56,14 @@ public interface Components {
 
     public static @NotNull Component noItalic(@NotNull String raw, @NotNull TextColor color) {
         return text(raw, color).decoration(ITALIC, false);
+    }
+
+    static @NotNull Component noItalic(@NotNull Component component) {
+        return component.decoration(ITALIC, false);
+    }
+
+    static @NotNull List<? extends Component> noItalic(@NotNull List<? extends Component> components) {
+        return components.stream().map(Components::noItalic).toList();
     }
 
     public static @NotNull String asString(@NotNull Component component) {
