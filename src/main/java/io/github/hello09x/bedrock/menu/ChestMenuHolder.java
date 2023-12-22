@@ -4,7 +4,6 @@ import lombok.Getter;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,17 +13,19 @@ import java.util.function.Consumer;
 
 public class ChestMenuHolder implements InventoryHolder {
 
-    @Getter
-    @NotNull
-    private final Plugin plugin;
-
     private Inventory inventory;
 
+    @NotNull
     private final Map<Integer, Consumer<InventoryClickEvent>> buttons = new HashMap<>();
 
-    public ChestMenuHolder(@NotNull Plugin plugin) {
-        this.plugin = plugin;
+    @Getter
+    @NotNull
+    private final Consumer<InventoryClickEvent> onback;
+
+    public ChestMenuHolder(@NotNull Consumer<InventoryClickEvent> onBack) {
+        this.onback = onBack;
     }
+
 
     @Override
     public @NotNull Inventory getInventory() {
@@ -38,8 +39,12 @@ public class ChestMenuHolder implements InventoryHolder {
         this.inventory = inventory;
     }
 
-    public void addButton(@NotNull Integer slot, Consumer<InventoryClickEvent> callback) {
+    public void addButton(int slot, Consumer<InventoryClickEvent> callback) {
         this.buttons.put(slot, callback);
+    }
+
+    public void removeButton(int slot) {
+        this.buttons.remove(slot);
     }
 
     public @Nullable Consumer<InventoryClickEvent> getButton(@NotNull Integer slot) {
