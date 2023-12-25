@@ -1,5 +1,6 @@
 package io.github.hello09x.bedrock.config;
 
+import com.google.common.base.Throwables;
 import io.github.hello09x.bedrock.io.IOUtil;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.Plugin;
@@ -57,7 +58,11 @@ public abstract class Config<T extends Config<T>> {
             @SuppressWarnings("unchecked")
             var typedThis = (T) this;
             for (var listener : this.listeners) {
-                listener.accept(typedThis);
+                try {
+                    listener.accept(typedThis);
+                } catch (Throwable e) {
+                    this.plugin.getLogger().severe(Throwables.getStackTraceAsString(e));
+                }
             }
         }
     }
