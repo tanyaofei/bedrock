@@ -3,10 +3,12 @@ package io.github.hello09x.bedrock.storage;
 import com.google.common.base.Throwables;
 import io.github.hello09x.bedrock.io.IOUtil;
 import io.github.hello09x.bedrock.storage.value.AbstractValueWrapper;
+import io.github.hello09x.bedrock.util.MCUtils;
 import io.github.hello09x.bedrock.util.RegistrablePlugin;
 import lombok.AccessLevel;
 import lombok.Getter;
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.NamespacedKey;
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -47,7 +49,11 @@ public class JSONPersistentDataContainer implements PersistentDataContainer {
         }
 
         {
-            Bukkit.getScheduler().runTaskTimer(plugin, this::saveFile, 6000, 6000);
+            if (MCUtils.isFolia()) {
+                Bukkit.getGlobalRegionScheduler().runAtFixedRate(plugin, task -> this.saveFile(), 6000, 6000);
+            } else {
+                Bukkit.getScheduler().runTaskTimer(plugin, this::saveFile, 6000, 6000);
+            }
             plugin.registerOnDisable(this::saveFile);
         }
     }

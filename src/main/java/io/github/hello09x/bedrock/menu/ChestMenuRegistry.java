@@ -1,5 +1,6 @@
 package io.github.hello09x.bedrock.menu;
 
+import io.github.hello09x.bedrock.util.MCUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
@@ -23,24 +24,27 @@ public class ChestMenuRegistry {
 
     public ChestMenuRegistry(@NotNull Plugin plugin) {
         Bukkit.getPluginManager().registerEvents(new InventoryClickListener(), plugin);
-        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-            boolean showTips = (Bukkit.getServer().getCurrentTick() & 1) == 1;
-            for (var entry : menus.entrySet()) {
-                var inv = entry.getKey();
-                for (var viewer : inv.getViewers()) {
-                    var view = viewer.getOpenInventory();
-                    if (view.getTopInventory() != inv) {
-                        return;
-                    }
+        if (!MCUtils.isFolia()) {
+            Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+                boolean showTips = (Bukkit.getServer().getCurrentTick() & 1) == 1;
+                for (var entry : menus.entrySet()) {
+                    var inv = entry.getKey();
+                    for (var viewer : inv.getViewers()) {
+                        var view = viewer.getOpenInventory();
+                        if (view.getTopInventory() != inv) {
+                            return;
+                        }
 
-                    if (showTips) {
-                        view.setTitle("点击空白位置返回上一页");
-                    } else {
-                        view.setTitle(entry.getValue());
+                        if (showTips) {
+                            view.setTitle("点击空白位置返回上一页");
+                        } else {
+                            view.setTitle(entry.getValue());
+                        }
                     }
                 }
-            }
-        }, 0, 41);
+            }, 0, 41);
+        }
+
     }
 
     public @NotNull ChestMenu createMenu(int size, @NotNull Component title, @NotNull Consumer<InventoryClickEvent> onBack) {
