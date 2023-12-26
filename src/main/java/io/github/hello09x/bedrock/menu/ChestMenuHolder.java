@@ -2,6 +2,7 @@ package io.github.hello09x.bedrock.menu;
 
 import lombok.Getter;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.jetbrains.annotations.NotNull;
@@ -13,17 +14,31 @@ import java.util.function.Consumer;
 
 public class ChestMenuHolder implements InventoryHolder {
 
-    private Inventory inventory;
-
     @NotNull
     private final Map<Integer, Consumer<InventoryClickEvent>> buttons = new HashMap<>();
 
     @Getter
     @NotNull
-    private final Consumer<InventoryClickEvent> onback;
+    private final Consumer<InventoryClickEvent> onClickOutside;
 
-    public ChestMenuHolder(@NotNull Consumer<InventoryClickEvent> onBack) {
-        this.onback = onBack;
+    @Getter
+    @NotNull
+    private final Consumer<InventoryClickEvent> onClickBottom;
+
+    @Getter
+    @NotNull
+    private final Consumer<InventoryCloseEvent> onClose;
+
+    private Inventory inventory;
+
+    public ChestMenuHolder(
+            @NotNull Consumer<InventoryClickEvent> onClickBottom,
+            @NotNull Consumer<InventoryClickEvent> onClickOutside,
+            @NotNull Consumer<InventoryCloseEvent> onClose
+    ) {
+        this.onClickBottom = onClickBottom;
+        this.onClickOutside = onClickOutside;
+        this.onClose = onClose;
     }
 
 

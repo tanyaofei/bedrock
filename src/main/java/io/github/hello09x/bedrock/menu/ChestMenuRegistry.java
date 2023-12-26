@@ -1,14 +1,13 @@
 package io.github.hello09x.bedrock.menu;
 
 import io.github.hello09x.bedrock.util.MCUtils;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.Plugin;
@@ -16,14 +15,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.WeakHashMap;
-import java.util.function.Consumer;
 
 public class ChestMenuRegistry {
 
     private final WeakHashMap<Inventory, String> menus = new WeakHashMap<>();
 
     public ChestMenuRegistry(@NotNull Plugin plugin) {
-        Bukkit.getPluginManager().registerEvents(new InventoryClickListener(), plugin);
+        Bukkit.getPluginManager().registerEvents(new ChestMenuListener(), plugin);
         if (!MCUtils.isFolia()) {
             Bukkit.getScheduler().runTaskTimer(plugin, () -> {
                 boolean showTips = (Bukkit.getServer().getCurrentTick() & 1) == 1;
@@ -44,16 +42,13 @@ public class ChestMenuRegistry {
                 }
             }, 0, 41);
         }
-
     }
 
-    public @NotNull ChestMenu createMenu(int size, @NotNull Component title, @NotNull Consumer<InventoryClickEvent> onBack) {
-        var menu = new ChestMenu(size, title, onBack);
-        this.menus.put(menu.getInventory(), LegacyComponentSerializer.legacySection().serialize(title));
-        return menu;
+    public @NotNull ChestMenuBuilder builder() {
+        return new ChestMenuBuilder();
     }
 
-    public static class InventoryClickListener implements Listener {
+    public static class ChestMenuListener implements Listener {
 
         @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
         public void onClick(@NotNull InventoryClickEvent event) {
@@ -67,21 +62,34 @@ public class ChestMenuRegistry {
 
             var clicked = event.getClickedInventory();
             if (clicked != null && clicked != top) {
-                // 点击下方的物品栏不处理
+                holder.getOnClickBottom().accept(event);
                 return;
             }
 
             var slot = event.getSlot();
             if ((event.getClick() == ClickType.RIGHT && event.getCurrentItem() == null) || event.getSlotType() == InventoryType.SlotType.OUTSIDE) {
                 // 右键空白地方返回
-                holder.getOnback().accept(event);
+                holder.getOnClickOutside().accept(event);
                 return;
             }
+
             var button = holder.getButton(slot);
             if (button == null) {
                 return;
             }
+
             button.accept(event);
+        }
+
+        @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
+        public void onClose(@NotNull InventoryCloseEvent event) {
+            var top = event.getView().getTopInventory();
+            var holder = this.getHolder(top);
+            if (holder == null) {
+                return;
+            }
+
+            holder.getOnClose().accept(event);
         }
 
         private @Nullable ChestMenuHolder getHolder(@NotNull Inventory inventory) {
@@ -91,4 +99,5 @@ public class ChestMenuRegistry {
             return holder;
         }
     }
+
 }
