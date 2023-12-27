@@ -90,4 +90,44 @@ public class InventoryUtils {
         return items;
     }
 
+    /**
+     * 移动物品
+     *
+     * @param from 来源
+     * @param slot 物品位于来源的下标
+     * @param to   目标
+     * @return 移动成功返回 {@code true}, 如果目标容器没有空间, 则返回 {@code false}
+     */
+    public static boolean moveItem(@NotNull Inventory from, int slot, @NotNull Inventory to) {
+        if (copyItem(from, slot, to)) {
+            from.setItem(slot, null);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * 复制物品
+     *
+     * @param from 来源
+     * @param slot 物品位于来源的下标
+     * @param to   目标
+     * @return 复制成功返回 {@code true}, 如果目标容器没有空间, 则返回 {@code false}
+     */
+    public static boolean copyItem(@NotNull Inventory from, int slot, @NotNull Inventory to) {
+        var target = to.firstEmpty();
+        if (target == -1) {
+            return false;
+        }
+
+        var item = from.getItem(slot);
+        if (item == null) {
+            return false;
+        }
+
+        to.setItem(slot, item);
+        return true;
+    }
+
 }
