@@ -1,4 +1,4 @@
-package io.github.hello09x.bedrock.pluginmessage;
+package io.github.hello09x.bedrock.util;
 
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
@@ -15,27 +15,27 @@ public class PluginMessages {
      * @param out        自定义消息
      * @return 消息字节数组
      */
-    public static byte @NotNull [] asForwardMessage(@NotNull String subchannel, @NotNull ByteArrayDataOutput out) {
+    public static byte @NotNull [] box(@NotNull String subchannel, @NotNull ByteArrayDataOutput out) {
         var data = out.toByteArray();
-        var wrap = ByteStreams.newDataOutput();
-        wrap.writeUTF("Forward");
-        wrap.writeUTF("ONLINE");
-        wrap.writeUTF(subchannel);
+        var box = ByteStreams.newDataOutput();
+        box.writeUTF("Forward");
+        box.writeUTF("ONLINE");
+        box.writeUTF(subchannel);
 
-        wrap.writeShort(data.length);
-        wrap.write(data);
-        return wrap.toByteArray();
+        box.writeShort(data.length);
+        box.write(data);
+        return box.toByteArray();
     }
 
     /**
      * 转成 BungeeCord 转发后的自定义插件消息的格式, 用于解析本地消息
-     * <p>这个方法存在的意义是用来保证与接收到的远程消息格式一致, 方便在不经过 BungeeCord 转发也能让 {@link #parseForwardMessage(String, byte[])} 使用</p>
+     * <p>这个方法存在的意义是用来保证与接收到的远程消息格式一致, 方便在不经过 BungeeCord 转发也能让 {@link #unbox(String, byte[])} 使用</p>
      *
      * @param subchannel 自定义子频道
      * @param out        自定义消息
      * @return 消息字节数组
      */
-    public static byte @NotNull [] asLocalForwardMessage(@NotNull String subchannel, @NotNull ByteArrayDataOutput out) {
+    public static byte @NotNull [] boxLocal(@NotNull String subchannel, @NotNull ByteArrayDataOutput out) {
         var data = out.toByteArray();
 
         var wrap = ByteStreams.newDataOutput();
@@ -52,7 +52,7 @@ public class PluginMessages {
      * @param message    插件消息
      * @return 解析后的插件消息
      */
-    public static @Nullable ByteArrayDataInput parseForwardMessage(@NotNull String subchannel, byte @NotNull [] message) {
+    public static @Nullable ByteArrayDataInput unbox(@NotNull String subchannel, byte @NotNull [] message) {
         var in = ByteStreams.newDataInput(message);
         if (!subchannel.equals(in.readUTF())) {
             return null;

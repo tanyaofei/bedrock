@@ -1,5 +1,6 @@
 package io.github.hello09x.bedrock.menu;
 
+import io.github.hello09x.bedrock.util.Folia;
 import io.github.hello09x.bedrock.util.MCUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
@@ -22,7 +23,7 @@ public class ChestMenuRegistry {
 
     public ChestMenuRegistry(@NotNull Plugin plugin) {
         Bukkit.getPluginManager().registerEvents(new ChestMenuListener(), plugin);
-        if (!MCUtils.isFolia()) {
+        if (!Folia.isFolia()) {
             Bukkit.getScheduler().runTaskTimer(plugin, () -> {
                 boolean showTips = (Bukkit.getServer().getCurrentTick() & 1) == 1;
                 for (var entry : menus.entrySet()) {

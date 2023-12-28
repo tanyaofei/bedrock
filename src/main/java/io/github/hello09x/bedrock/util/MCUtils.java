@@ -4,7 +4,6 @@ import org.bukkit.Bukkit;
 
 public abstract class MCUtils {
 
-    private final static boolean IS_FOLIA = Bukkit.getServer().getName().equals("Folia");
 
     public static void ensureMainThread() {
         if (!Bukkit.isPrimaryThread()) {
@@ -12,9 +11,5 @@ public abstract class MCUtils {
         }
     }
 
-
-    public static boolean isFolia() {
-        return IS_FOLIA;
-    }
 
 }
