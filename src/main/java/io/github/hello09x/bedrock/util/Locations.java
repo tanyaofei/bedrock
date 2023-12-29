@@ -66,4 +66,29 @@ public class Locations {
         return "(%.1f, %.1f, %.1f)".formatted(pos.getX(), pos.getY(), pos.getZ());
     }
 
+    /**
+     * 以 {@code center} 为圆心, {@code r} 为半径, 将圆边拆成 {@code limits} 个点, 返回每个点的坐标
+     *
+     * @param center 圆心
+     * @param r      半径
+     * @param limits 点数
+     * @return 每个点的坐标
+     */
+    public @NotNull
+    static Location[] getCirclePoints(@NotNull Location center, double r, int limits) {
+        var world = center.getWorld();
+        var x = center.getX();
+        var y = center.getY();
+        var z = center.getZ();
+        double m = (2 * Math.PI) / limits;
+
+        var points = new Location[limits];
+        for (int i = 0; i < limits; i++) {
+            double x1 = x + r * Math.sin(m * i);
+            double z1 = z + r * Math.cos(m * i);
+            points[i] = new Location(world, x1, y, z1);
+        }
+        return points;
+    }
+
 }
