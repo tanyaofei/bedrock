@@ -126,7 +126,7 @@ public class InventoryUtils {
             return false;
         }
 
-        to.setItem(slot, item);
+        to.setItem(target, item);
         return true;
     }
 
